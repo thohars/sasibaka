@@ -20,5 +20,20 @@ jobs:
         npm run build
     - name: Install Surge
       run: npm install -g surge
-    - name: Deploy
-      run: npx surge ./dist ${{secrets.surge_domain}} --token ${{secrets.surge_token}}
+    - name: Deploy to Surge
+      run: npx surge ./dist ${{secrets.surge_domain}} --token ${{secrets.surge_token}} >/dev/null
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@master
+      with:
+        host: sasibaka.imajiugm.com
+        username: ${{ secrets.user }}
+        key: ${{ secrets.ssh }}
+        port: ${{ secrets.port }}
+        passphrase: ${{ secrets.passphrase }}
+        script: |
+          export NVM_DIR=~/.nvm
+          source ~/.nvm/nvm.sh
+          cd ~/sasibaka
+          git stash
+          git pull --force origin main
+          npm run build
